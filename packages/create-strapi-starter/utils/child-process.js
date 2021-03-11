@@ -3,6 +3,7 @@
 const { execSync } = require('child_process');
 const execa = require('execa');
 const hasYarn = require('./has-yarn');
+const logger = require('./logger');
 
 /**
  * @param  {string} path Path to directory (frontend, backend)
@@ -37,14 +38,18 @@ async function initGit(rootPath) {
     await execa('git', ['init'], {
       cwd: rootPath,
     });
+  } catch (err) {
+    logger.warn(`Could not initialize a git repository`);
+  }
 
+  try {
     await execa(`git`, [`add`, `-A`], { cwd: rootPath });
 
     execSync(`git commit -m "Create Strapi starter project"`, {
       cwd: rootPath,
     });
   } catch (err) {
-    console.error(err);
+    logger.warn(`Could not create initial git commit`);
   }
 }
 

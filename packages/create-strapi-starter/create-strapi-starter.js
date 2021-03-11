@@ -1,6 +1,7 @@
 'use strict';
 
 const commander = require('commander');
+
 const packageJson = require('./package.json');
 const buildStarter = require('./utils/build-starter');
 
@@ -23,16 +24,17 @@ program
   .option('--dbauth <dbauth>', 'Authentication Database')
   .option('--dbfile <dbfile>', 'Database file path for sqlite')
   .option('--dbforce', 'Overwrite database content if any')
-  .description('create a new strapi starter application')
+  .description('Create a new strapi starter application')
   .action((directory, starterUrl, program) => {
     const projectArgs = { projectName: directory, starterUrl };
 
     buildStarter(projectArgs, program);
   });
 
-// Show help if not enough arguments are present
-if (process.argv.length < 4) {
-  program.help();
-}
+program.exitOverride();
 
-program.parse(process.argv);
+try {
+  program.parse(process.argv);
+} catch (err) {
+  program.outputHelp();
+}
