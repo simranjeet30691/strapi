@@ -10,4 +10,8 @@ module.exports = {
   warn(message) {
     console.log(`${chalk.yellow('warning')}: ${message}`);
   },
+
+  info(message) {
+    console.log(`${chalk.blue('info')}: ${message}`);
+  },
 };

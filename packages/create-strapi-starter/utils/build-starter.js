@@ -32,8 +32,16 @@ function readStarterJson(filePath, starterUrl) {
  * @param  {string} rootPath Path to the project directory
  * @param  {string} projectName Name of the project
  */
-async function initPackageJson(rootPath, projectName) {
+async function initPackageJson(rootPath, projectName, starterConfig) {
   const packageManager = hasYarn ? 'yarn --cwd' : 'npm run --prefix';
+  // If specified get develop command and port
+  const { devCommand, port } = starterConfig;
+  // If command isn't provided assume it is develop
+  const develop = devCommand ? devCommand : 'develop';
+
+  if (!port) {
+    logger.info('A port was not specifed, the frontend will run on its default port');
+  }
 
   try {
     await fse.writeJson(
@@ -44,12 +52,15 @@ async function initPackageJson(rootPath, projectName) {
         version: '0.0.0',
         scripts: {
           'develop:backend': `${packageManager} backend develop`,
-          'develop:frontend': `wait-on http://localhost:1337/admin && ${packageManager} frontend develop --open`,
+          'develop:frontend': `wait-on http://localhost:1337/admin && ${packageManager} frontend ${develop}`,
+          // Try to open, don't break if no port provided
+          'develop:open': `wait-on http://localhost:${port} && open-cli http://localhost:${port}`,
           develop: 'FORCE_COLOR=1 npm-run-all -l -p develop:*',
         },
         devDependencies: {
           'npm-run-all': '4.1.5',
           'wait-on': '5.2.1',
+          'open-cli': '6.0.1',
         },
       },
       {
@@ -140,7 +151,7 @@ module.exports = async function buildStarter(projectArgs, program) {
   await generateNewApp(join(rootPath, 'backend'), generateStrapiAppOptions);
 
   // Setup monorepo
-  initPackageJson(rootPath, projectBasename);
+  initPackageJson(rootPath, projectBasename, starterJson);
 
   // Add gitignore
   try {
